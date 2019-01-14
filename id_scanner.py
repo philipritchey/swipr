@@ -8,6 +8,7 @@ for attendance taking
 import time
 import getpass
 import signal
+import re
 
 ADMIN_ID = ['6016426592443531', 'PHILIP RITCHEY']
 STUDENT_ID = '60'
@@ -32,7 +33,6 @@ def admin() -> None:
     print('nothing happened...')
 
 def get_uin() -> int:
-    import re
     uin = input('Please enter your UIN: ')
     result = re.match(r'\d{3}00\d{4}', uin)
     while not result:
@@ -76,6 +76,8 @@ def main() -> None:
             # scan ID
             try:
                 id_data = getpass.getpass('swipe ID...')
+                if len(id_data) == 0:
+                    continue
             except EOFError:
                 print()
                 continue
@@ -85,7 +87,11 @@ def main() -> None:
                 id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
             else:
                 # student/other ID
-                id_key = id_data[1:17]
+                result = re.match(r'%(\d+)\?;(\d+)\?\+(\d+)\?', id_data)
+                if not result:
+                    print('[ERROR] swipe error, please swipe again.')
+                    continue
+                id_key = result.group(1)
             event = '{:.4f}\t{:s}'.format(time.time(), id_key)
             #print(event)
             swipe_log.write(event + '\n')
@@ -111,6 +117,7 @@ def main() -> None:
                         f.write('{:s}\t{:s}\t{:s}\n'.format(last, first_middle, uin))
                     roster[uin] = (last, first_middle)
             last, first_middle = roster[uin]
+            swipe_log.write('{:.4f}\t{:s} {:s} ({:s})\n'.format(time.time(), first_middle, last, uin))
             print('Howdy, {:s} {:s}!'.format(first_middle, last))
             if id_key in ADMIN_ID:
                 admin()
