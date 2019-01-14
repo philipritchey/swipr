@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """
 scan TAMU student ID cards and TX driver's licences
 for attendance taking
@@ -51,9 +53,21 @@ def main() -> None:
             for line in uin_dict_file:
                 key, value = line.split(':')
                 if key in uin_dict:
-                    print('[WARNING] key ({:s}) already exists, ignoring new value.'.format(key))
+                    print('[WARNING] key ({:s}) already exists, replacing old value.'.format(key))
+                uin_dict[key] = value
+    except FileNotFoundError:
+        pass
+
+    # read in roster
+    roster = dict()
+    try:
+        with open('roster') as roster_file:
+            for line in roster_file:
+                last, first_middle, uin = line.strip().split('\t')
+                if uin in roster:
+                    print('[WARNING] UIN ({:s}) already exists, skipping'.format(uin))
                 else:
-                    uin_dict[key] = value
+                    roster[uin] = (last, first_middle)
     except FileNotFoundError:
         pass
 
@@ -81,7 +95,23 @@ def main() -> None:
                 uin_dict[id_key] = uin
                 with open(UIN_DICT,'at') as f:
                     f.write('{}:{}\n'.format(id_key, uin))
-            print('Howdy, {:s}'.format(uin_dict[id_key]))
+            else:
+                uin = uin_dict[id_key]
+            if uin not in roster:
+                print('The UIN associated with this ID is not in the roster.')
+                print('Please verify your UIN.')
+                uin = get_uin()
+                uin_dict[id_key] = uin
+                with open(UIN_DICT,'at') as f:
+                    f.write('{:s}:{:s}\n'.format(id_key, uin))
+                if uin not in roster:
+                    first_middle = input('first [and middle] name: ')
+                    last = input('last name: ')
+                    with open('roster', 'at') as f:
+                        f.write('{:s}\t{:s}\t{:s}\n'.format(last, first_middle, uin))
+                    roster[uin] = (last, first_middle)
+            last, first_middle = roster[uin]
+            print('Howdy, {:s} {:s}!'.format(first_middle, last))
             if id_key in ADMIN_ID:
                 admin()
 
