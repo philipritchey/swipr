@@ -51,7 +51,7 @@ def main() -> None:
     try:
         with open(UIN_DICT) as uin_dict_file:
             for line in uin_dict_file:
-                key, value = line.split(':')
+                key, value = line.strip().split(':')
                 if key in uin_dict:
                     print('[WARNING] key ({:s}) already exists, replacing old value.'.format(key))
                 uin_dict[key] = value
