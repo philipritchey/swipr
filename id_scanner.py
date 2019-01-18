@@ -16,6 +16,7 @@ TX_DL = 'TX'
 
 SWIPE_LOG = 'swipe_log'
 UIN_DICT = 'uin_dict'
+UIN_PATTERN = r'^\d{3}00\d{4}$'
 
 def signal_handler(sig, frame) -> None:
     # ignore
@@ -33,12 +34,12 @@ def admin() -> None:
     print('nothing happened...')
 
 def get_uin() -> int:
-    uin = input('Please enter your UIN: ')
-    result = re.match(r'\d{3}00\d{4}', uin)
+    uin = input('Please enter your UIN: ').strip()
+    result = re.match(UIN_PATTERN, uin)
     while not result:
         print('Invalid UIN.')
-        uin = input('Please enter your UIN: ')
-        result = re.match(r'\d{3}00\d{4}', uin)
+        uin = input('Please enter your UIN: ').strip()
+        result = re.match(UIN_PATTERN, uin)
     return result.group(0)
 
 def main() -> None:
@@ -81,28 +82,32 @@ def main() -> None:
             except EOFError:
                 print()
                 continue
-            id_type = id_data[1:3]
-            if id_type == TX_DL:
-                # Texas driver's license
-                id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
+
+            # is it a UIN directly?
+            result = re.match(UIN_PATTERN, id_data)
+            if result:
+                uin = result.group(0)
+                id_key = uin
             else:
-                # student/other ID
-                result = re.match(r'%(\d+)\?;(\d+)\?\+(\d+)\?', id_data)
-                if not result:
-                    print('[ERROR] swipe error, please swipe again.')
-                    continue
-                id_key = result.group(1)
-            event = '{:.4f}\t{:s}'.format(time.time(), id_key)
-            #print(event)
-            swipe_log.write(event + '\n')
-            if id_key not in uin_dict:
-                print('This is the first time this ID has been swiped.')
-                uin = get_uin()
-                uin_dict[id_key] = uin
-                with open(UIN_DICT,'at') as f:
-                    f.write('{}:{}\n'.format(id_key, uin))
-            else:
-                uin = uin_dict[id_key]
+                id_type = id_data[1:3]
+                if id_type == TX_DL:
+                    # Texas driver's license
+                    id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
+                else:
+                    # student/other ID
+                    result = re.match(r'%(\d+)\?;(\d+)\?\+(\d+)\?', id_data)
+                    if not result:
+                        print('[ERROR] swipe error, please swipe again.')
+                        continue
+                    id_key = result.group(1)
+                if id_key not in uin_dict:
+                    print('This is the first time this ID has been swiped.')
+                    uin = get_uin()
+                    uin_dict[id_key] = uin
+                    with open(UIN_DICT,'at') as f:
+                        f.write('{}:{}\n'.format(id_key, uin))
+                else:
+                    uin = uin_dict[id_key]
             if uin not in roster:
                 print('The UIN associated with this ID is not in the roster.')
                 print('Please verify your UIN.')
@@ -117,12 +122,11 @@ def main() -> None:
                         f.write('{:s}\t{:s}\t{:s}\n'.format(last, first_middle, uin))
                     roster[uin] = (last, first_middle)
             last, first_middle = roster[uin]
-            swipe_log.write('{:.4f}\t{:s} {:s} ({:s})\n'.format(time.time(), first_middle, last, uin))
+            event = '{:.4f} {:s} {:s} {:s} {:s}'.format(time.time(), id_key, first_middle, last, uin)
+            swipe_log.write(event + '\n')
             print('Howdy, {:s} {:s}!'.format(first_middle, last))
             if id_key in ADMIN_ID:
                 admin()
-
-
 
 if __name__ == '__main__':
     # ignore SIGINT, SIGTSTP
