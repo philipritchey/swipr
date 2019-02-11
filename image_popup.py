@@ -4,7 +4,9 @@ import time
 import os
 
 w = tk.Tk()
-ready = True
+img_not_available = ImageTk.PhotoImage(Image.open(os.path.join('image','no_image_available.jpeg')))
+img_ready = ImageTk.PhotoImage(Image.open(os.path.join('image','ready.png')))
+#ready = True
 
 def show_img(uin = None):
     global w
@@ -14,7 +16,8 @@ def show_img(uin = None):
     try:
         img = ImageTk.PhotoImage(Image.open(os.path.join('image',uin+'.jpeg')))
     except FileNotFoundError:
-        img = ImageTk.PhotoImage(Image.open(os.path.join('image','notfound.png')))
+        #img = ImageTk.PhotoImage(Image.open(os.path.join('image','notfound.png')))
+        img = img_not_available
     panel.image = img
     width = img.width()
     height = img.height()
@@ -31,7 +34,8 @@ def ready():
     global panel
 
     w.title('Ready')
-    img = ImageTk.PhotoImage(Image.open(os.path.join('image','ready.png')))
+    #img = ImageTk.PhotoImage(Image.open(os.path.join('image','ready.png')))
+    img = img_ready
     panel.image = img
     width = img.width()
     height = img.height()
