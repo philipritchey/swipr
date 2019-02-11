@@ -9,7 +9,10 @@ import time
 import getpass
 import signal
 import re
+import tkinter as tk
+import os
 from typing import Dict
+from PIL import ImageTk, Image
 
 ADMIN_ID = ['6016426592443531', 'PHILIP RITCHEY']
 STUDENT_ID = '60'
@@ -21,6 +24,11 @@ ROSTER = 'roster'
 
 UIN_PATTERN = r'^\d{3}00\d{4}$'
 TAMU_ID_PATTERN = r'%(\d+)\?;((\d+)\?\+(\d+)\?)?'
+
+# TODO: eliminate globals.  make a class?
+w = tk.Tk()
+img_not_available = ImageTk.PhotoImage(Image.open(os.path.join('image','no_image_available.jpeg')))
+img_ready = ImageTk.PhotoImage(Image.open(os.path.join('image','ready.png')))
 
 def signal_handler(sig, frame) -> None:
     # ignore
@@ -86,6 +94,39 @@ def init_roster() -> Dict:
         pass
     return roster
 
+def update_image(img = None):
+    global w
+    global panel
+
+    panel.image = img
+    width = img.width()
+    height = img.height()
+    x,y=0,0
+    w.geometry('{}x{}+{}+{}'.format(width,height,x,y))
+    panel.configure(image = img)
+    w.update_idletasks()
+    w.update()
+
+# TODO: eliminate globals?
+def show_img(uin = '000000000', first_middle = 'FIRST MIDDLE', last = 'LAST'):
+    global w
+    global panel
+
+    w.title(first_middle + " " + last)
+    try:
+        update_image(ImageTk.PhotoImage(Image.open(os.path.join('image',uin+'.jpeg'))))
+    except FileNotFoundError:
+        update_image(img_not_available)
+    time.sleep(1)
+
+# TODO: eliminate globals?
+def ready():
+    global w
+    global panel
+
+    w.title('Ready')
+    update_image(img_ready)
+
 def main() -> None:
     """
     main loop for ID scanning
@@ -101,6 +142,7 @@ def main() -> None:
         while True:
             # scan ID
             print()
+            ready()
             try:
                 id_data = getpass.getpass('swipe ID (mag stripe AWAY from LED)...')
                 if len(id_data) == 0:
@@ -151,6 +193,7 @@ def main() -> None:
             event = '{:.4f} {:s} {:s} {:s} {:s}'.format(time.time(), id_key, first_middle, last, uin)
             swipe_log.write(event + '\n')
             print('Howdy, {:s} {:s}!'.format(first_middle, last))
+            show_img(uin, first_middle, last)
             if id_key in ADMIN_ID:
                 admin()
 
@@ -158,5 +201,9 @@ if __name__ == '__main__':
     # ignore SIGINT, SIGTSTP
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTSTP, signal_handler)
+    
+    # setup tkinter window
+    panel = tk.Label(w)
+    panel.pack(side = tk.TOP, fill = tk.BOTH, expand = tk.YES)
 
     main()
