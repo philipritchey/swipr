@@ -9,6 +9,7 @@ import time
 import getpass
 import signal
 import re
+from typing import Dict
 
 ADMIN_ID = ['6016426592443531', 'PHILIP RITCHEY']
 STUDENT_ID = '60'
@@ -16,7 +17,10 @@ TX_DL = 'TX'
 
 SWIPE_LOG = 'swipe_log'
 UIN_DICT = 'uin_dict'
+ROSTER = 'roster'
+
 UIN_PATTERN = r'^\d{3}00\d{4}$'
+TAMU_ID_PATTERN = r'%(\d+)\?;((\d+)\?\+(\d+)\?)?'
 
 def signal_handler(sig, frame) -> None:
     # ignore
@@ -27,11 +31,24 @@ def admin() -> None:
     access admin functions
     """
 
-    action = input('admin> ')
-    if action.lower() in ['exit', 'quit']:
-        print('exiting...')
+    action = input('admin> ').lower()
+    if action in ['exit', 'quit']:
+        print('(admin) exiting...')
         exit(1)
-    print('nothing happened...')
+    elif action in ['test']:
+        print('(admin) entering test mode')
+        while True:
+            try:
+                id_data = getpass.getpass('(admin) swipe ID (mag stripe AWAY from LED)...')
+                if len(id_data) == 0:
+                    print('<empty>')
+                    break
+                else:
+                    print(id_data)
+            except EOFError:
+                print()
+                continue
+    print('(admin) nothing happened...')
 
 def get_uin() -> int:
     uin = input('Please enter your UIN: ').strip()
@@ -42,12 +59,7 @@ def get_uin() -> int:
         result = re.match(UIN_PATTERN, uin)
     return result.group(0)
 
-def main() -> None:
-    """
-    main loop for ID scanning
-    """
-
-    # read in UIN dictionary
+def init_uin_dict() -> Dict:
     uin_dict = dict()
     try:
         with open(UIN_DICT) as uin_dict_file:
@@ -58,11 +70,12 @@ def main() -> None:
                 uin_dict[key] = value
     except FileNotFoundError:
         pass
+    return uin_dict
 
-    # read in roster
+def init_roster() -> Dict:
     roster = dict()
     try:
-        with open('roster') as roster_file:
+        with open(ROSTER) as roster_file:
             for line in roster_file:
                 last, first_middle, uin = line.strip().split('\t')
                 if uin in roster:
@@ -71,12 +84,25 @@ def main() -> None:
                     roster[uin] = (last, first_middle)
     except FileNotFoundError:
         pass
+    return roster
+
+def main() -> None:
+    """
+    main loop for ID scanning
+    """
+
+    # read in UIN dictionary
+    uin_dict = init_uin_dict()
+
+    # read in roster
+    roster = init_roster()
 
     with open(SWIPE_LOG, 'at') as swipe_log:
         while True:
             # scan ID
+            print()
             try:
-                id_data = getpass.getpass('swipe ID...')
+                id_data = getpass.getpass('swipe ID (mag stripe AWAY from LED)...')
                 if len(id_data) == 0:
                     continue
             except EOFError:
@@ -95,13 +121,13 @@ def main() -> None:
                     id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
                 else:
                     # student/other ID
-                    result = re.match(r'%(\d+)\?;(\d+)\?\+(\d+)\?', id_data)
+                    result = re.match(TAMU_ID_PATTERN, id_data)
                     if not result:
                         print('[ERROR] swipe error, please swipe again.')
                         continue
                     id_key = result.group(1)
                 if id_key not in uin_dict:
-                    print('This is the first time this ID has been swiped.')
+                    print('This seems to be the first time this ID has been swiped.')
                     uin = get_uin()
                     uin_dict[id_key] = uin
                     with open(UIN_DICT,'at') as f:
