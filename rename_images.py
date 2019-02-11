@@ -1,8 +1,14 @@
 import os
+import sys
 
-path_to_photos = input('path to photos: ')
-photo_prefix = input('photo prefix: ')
-path_to_roster = input('path to roster: ')
+if len(sys.argv) < 4:
+    path_to_photos = input('path to photos: ')
+    photo_prefix = input('photo prefix: ')
+    path_to_roster = input('path to roster: ')
+else:
+    path_to_photos = sys.argv[1]
+    photo_prefix = sys.argv[2]
+    path_to_roster = sys.argv[3]
 
 
 #LAST NAME,FIRST NAME,MID NAME,UIN,TNUMBER,EMAIL,CLASSIFICATION,CLASSCODE,CREDITS,MAJOR,MIDTERM REQUIRED,DEGREE CANDIDATE,ABSENCES,MIDTERM,FINALGRADE,UPDATEDFINALGRADE
