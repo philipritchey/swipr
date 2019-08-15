@@ -14,7 +14,10 @@ import os
 from typing import Dict
 from PIL import ImageTk, Image
 
-ADMIN_ID = ['6016426592443531', 'PHILIP RITCHEY']
+ADMIN_ID = [
+    '6016426594150381',
+    'PHILIP RITCHEY',
+    ]
 STUDENT_ID = '60'
 TX_DL = 'TX'
 
@@ -39,24 +42,34 @@ def admin() -> None:
     access admin functions
     """
 
-    action = input('admin> ').lower()
-    if action in ['exit', 'quit']:
-        print('(admin) exiting...')
-        exit(1)
-    elif action in ['test']:
-        print('(admin) entering test mode')
-        while True:
-            try:
-                id_data = getpass.getpass('(admin) swipe ID (mag stripe AWAY from LED)...')
-                if len(id_data) == 0:
-                    print('<empty>')
-                    break
-                else:
-                    print(id_data)
-            except EOFError:
-                print()
-                continue
-    print('(admin) nothing happened...')
+    print('Admin Commands')
+    print('--------------')
+    print('exit, quit    exit the program.')
+    print('test          echo ID scan data.  press enter to end.')
+    print('\nany unrecognized command returns to main loop\n')
+
+    while True:
+        action = input('admin> ').lower()
+        if action in ['exit', 'quit']:
+            print('(admin) exiting...')
+            exit(1)
+        elif action in ['test']:
+            print('(admin) entering test mode')
+            while True:
+                try:
+                    id_data = getpass.getpass('(admin/test) swipe ID (mag stripe AWAY from LED)...')
+                    if len(id_data) == 0:
+                        print('<empty>')
+                        break
+                    else:
+                        print(id_data)
+                except EOFError:
+                    print()
+                    continue
+            print('(admin/test) exiting test mode')
+        else:
+            break
+    print('(admin) returning to main loop...')
 
 def get_uin() -> int:
     uin = input('Please enter your UIN: ').strip()
@@ -201,7 +214,7 @@ if __name__ == '__main__':
     # ignore SIGINT, SIGTSTP
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTSTP, signal_handler)
-    
+
     # setup tkinter window
     panel = tk.Label(w)
     panel.pack(side = tk.TOP, fill = tk.BOTH, expand = tk.YES)
