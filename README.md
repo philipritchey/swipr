@@ -1,6 +1,9 @@
 # swipr-attendence
 id scanner for taking attendance
 
+## Updates
+run `git pull` to update.
+
 ## Basic Usage
 ./id_scanner.py to start the program
 scan a student ID to log attendance.  new IDs prompt for UIN.
