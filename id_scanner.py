@@ -130,7 +130,7 @@ def update_image(img = None):
     w.update()
 
 # TODO: eliminate globals?
-def show_img(uin = '000000000', first_middle = 'FIRST MIDDLE', last = 'LAST'):
+def show_img(uin = '000000000', first_middle = 'PREFERRED FIRST', last = 'LAST'):
     global w
     global panel
 
@@ -206,7 +206,7 @@ def main() -> None:
                 with open(UIN_DICT,'at') as f:
                     f.write('{:s}:{:s}\n'.format(id_key, uin))
                 if uin not in roster:
-                    first_middle = input('first [and middle] name: ')
+                    first_middle = input('preferred first name: ')
                     last = input('last name: ')
                     with open('roster', 'at') as f:
                         f.write('{:s}\t{:s}\t{:s}\n'.format(last, first_middle, uin))

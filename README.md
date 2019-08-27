@@ -47,7 +47,7 @@ ID number and UIN must be manually linked, e.g. at first scan.
     1. select image_rosters folder
     1. 2-finger click
     1. "Create Archive..."
-1. Add your details to this script and execute it:
+1. Add your details to this script (`batch_mode_rename_images.sh`) and execute it:
 ```bash
 # absolute path to image rosters
 pathToImageRosters="/home/instructor/Downloads/image_rosters"
@@ -72,9 +72,15 @@ do
     do
         cp $img ./image/
     done
+    
+    # add names and UINs to swipr/roster file
+    {
+        cut -d, -s -f1,2,4 $pathToRoster | sed '1d' | sed 's/,/\t/g'
+    } >> /home/instructor/Documents/swipr/roster
 done
 echo "Done!"
 ```
 1. Verify that swipr/image has a bunch of jpeg images with UINs for names
+1. Verify that swipr/roster has names and UINs
 1. It is now safe to delete the image_rosters folder
    * rm -r ~/Downloads/image_rosters
