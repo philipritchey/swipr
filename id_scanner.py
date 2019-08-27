@@ -107,11 +107,11 @@ def init_roster() -> Dict:
     try:
         with open(ROSTER) as roster_file:
             for line in roster_file:
-                last, first_middle, uin = line.strip().split('\t')
+                last, preferred_name, uin = line.strip().split('\t')
                 if uin in roster:
                     print('[WARNING] UIN ({:s}) already exists, skipping'.format(uin))
                 else:
-                    roster[uin] = (last, first_middle)
+                    roster[uin] = (last, preferred_name)
     except FileNotFoundError:
         pass
     return roster
@@ -130,11 +130,11 @@ def update_image(img = None):
     w.update()
 
 # TODO: eliminate globals?
-def show_img(uin = '000000000', first_middle = 'PREFERRED FIRST', last = 'LAST'):
+def show_img(uin = '000000000', preferred_name = 'PREFERRED NAME', last = 'LAST'):
     global w
     global panel
 
-    w.title(first_middle + " " + last)
+    w.title(preferred_name + " " + last)
     try:
         update_image(ImageTk.PhotoImage(Image.open(os.path.join('image',uin+'.jpeg'))))
     except FileNotFoundError:
@@ -206,16 +206,16 @@ def main() -> None:
                 with open(UIN_DICT,'at') as f:
                     f.write('{:s}:{:s}\n'.format(id_key, uin))
                 if uin not in roster:
-                    first_middle = input('preferred first name: ')
+                    preferred_name = input('preferred first name: ')
                     last = input('last name: ')
                     with open('roster', 'at') as f:
-                        f.write('{:s}\t{:s}\t{:s}\n'.format(last, first_middle, uin))
-                    roster[uin] = (last, first_middle)
-            last, first_middle = roster[uin]
-            event = '{:.4f} {:s} {:s} {:s} {:s}'.format(time.time(), id_key, first_middle, last, uin)
+                        f.write('{:s}\t{:s}\t{:s}\n'.format(last, preferred_name, uin))
+                    roster[uin] = (last, preferred_name)
+            last, preferred_name = roster[uin]
+            event = '{:.4f} {:s} {:s} {:s} {:s}'.format(time.time(), id_key, preferred_name, last, uin)
             swipe_log.write(event + '\n')
-            print('Howdy, {:s} {:s}!'.format(first_middle, last))
-            show_img(uin, first_middle, last)
+            print('Howdy, {:s} {:s}!'.format(preferred_name, last))
+            show_img(uin, preferred_name, last)
             if id_key in ADMIN_ID:
                 admin()
 
