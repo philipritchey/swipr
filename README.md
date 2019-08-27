@@ -1,4 +1,4 @@
-# swipr-attendence
+# swipr
 id scanner for taking attendance
 
 ## Updates
