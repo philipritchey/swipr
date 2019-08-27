@@ -46,7 +46,7 @@ def signal_handler(sig, frame) -> None:
     # ignore
     pass
 
-def admin() -> None:
+def admin(roster) -> None:
     """
     access admin functions
     """
@@ -55,6 +55,7 @@ def admin() -> None:
     print('--------------')
     print('exit, quit    exit the program.')
     print('test          echo ID scan data.  press enter to end.')
+    print('rename        change a name on the roster.')
     print('\nany unrecognized command returns to main loop\n')
 
     while True:
@@ -76,6 +77,24 @@ def admin() -> None:
                     print()
                     continue
             print('(admin/test) exiting test mode')
+        elif action in ['rename']:
+            uin = get_uin()
+            if uin in roster:
+                last_name, preferred_name = roster[uin]
+                print('(admin/rename) current roster entry: ')
+                print('uin           : {}'.format(uin))
+                print('last name     : {}'.format(last_name))
+                print('preferred name: {}'.format(preferred_name))
+                print('"Howdy, {} {}!"'.format(preferred_name, last_name))
+            else:
+                print('(admin/rename) no roster entry found, will be created')
+
+            preferred_name = input('(admin/rename) preferred first name: ')
+            last_name = input('(admin/rename) last name: ')
+            roster[uin] = (last_name, preferred_name)
+            with open('roster', 'at') as f:
+                f.write('{:s}\t{:s}\t{:s}\n'.format(last_name, preferred_name, uin))
+            print('"Howdy, {} {}!"'.format(preferred_name, last_name)) 
         else:
             break
     print('(admin) returning to main loop...')
@@ -109,9 +128,8 @@ def init_roster() -> Dict:
             for line in roster_file:
                 last, preferred_name, uin = line.strip().split('\t')
                 if uin in roster:
-                    print('[WARNING] UIN ({:s}) already exists, skipping'.format(uin))
-                else:
-                    roster[uin] = (last, preferred_name)
+                    print('[WARNING] UIN ({:s}) already exists, replacing old value'.format(uin))
+                roster[uin] = (last, preferred_name)
     except FileNotFoundError:
         pass
     return roster
@@ -160,64 +178,64 @@ def main() -> None:
     # read in roster
     roster = init_roster()
 
-    with open(SWIPE_LOG, 'at') as swipe_log:
-        while True:
-            # scan ID
-            print()
-            ready()
-            try:
-                id_data = getpass.getpass('swipe ID (mag stripe AWAY from LED)...')
-                if len(id_data) == 0:
-                    continue
-            except EOFError:
-                print()
+    while True:
+        # scan ID
+        print()
+        ready()
+        try:
+            id_data = getpass.getpass('swipe ID (mag stripe AWAY from LED)...')
+            if len(id_data) == 0:
                 continue
+        except EOFError:
+            print()
+            continue
 
-            # is it a UIN directly?
-            result = re.match(UIN_PATTERN, id_data)
-            if result:
-                uin = result.group(0)
-                id_key = uin
+        # is it a UIN directly?
+        result = re.match(UIN_PATTERN, id_data)
+        if result:
+            uin = result.group(0)
+            id_key = uin
+        else:
+            id_type = id_data[1:3]
+            if id_type == TX_DL:
+                # Texas driver's license
+                id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
             else:
-                id_type = id_data[1:3]
-                if id_type == TX_DL:
-                    # Texas driver's license
-                    id_key = ' '.join(id_data[16:].split('^')[0].split('$')[::-1])
-                else:
-                    # student/other ID
-                    result = re.match(TAMU_ID_PATTERN, id_data)
-                    if not result:
-                        print('[ERROR] swipe error, please swipe again.')
-                        continue
-                    id_key = result.group(1)
-                if id_key not in uin_dict:
-                    print('This seems to be the first time this ID has been swiped.')
-                    uin = get_uin()
-                    uin_dict[id_key] = uin
-                    with open(UIN_DICT,'at') as f:
-                        f.write('{}:{}\n'.format(id_key, uin))
-                else:
-                    uin = uin_dict[id_key]
-            if uin not in roster:
-                print('The UIN associated with this ID is not in the roster.')
-                print('Please verify your UIN.')
+                # student/other ID
+                result = re.match(TAMU_ID_PATTERN, id_data)
+                if not result:
+                    print('[ERROR] swipe error, please swipe again.')
+                    continue
+                id_key = result.group(1)
+            if id_key not in uin_dict:
+                print('This seems to be the first time this ID has been swiped.')
                 uin = get_uin()
                 uin_dict[id_key] = uin
                 with open(UIN_DICT,'at') as f:
-                    f.write('{:s}:{:s}\n'.format(id_key, uin))
-                if uin not in roster:
-                    preferred_name = input('preferred first name: ')
-                    last = input('last name: ')
-                    with open('roster', 'at') as f:
-                        f.write('{:s}\t{:s}\t{:s}\n'.format(last, preferred_name, uin))
-                    roster[uin] = (last, preferred_name)
-            last, preferred_name = roster[uin]
-            event = '{:.4f} {:s} {:s} {:s} {:s}'.format(time.time(), id_key, preferred_name, last, uin)
+                    f.write('{}:{}\n'.format(id_key, uin))
+            else:
+                uin = uin_dict[id_key]
+        if uin not in roster:
+            print('The UIN associated with this ID is not in the roster.')
+            print('Please verify your UIN.')
+            uin = get_uin()
+            uin_dict[id_key] = uin
+            with open(UIN_DICT,'at') as f:
+                f.write('{:s}:{:s}\n'.format(id_key, uin))
+            if uin not in roster:
+                preferred_name = input('preferred first name: ')
+                last = input('last name: ')
+                with open('roster', 'at') as f:
+                    f.write('{:s}\t{:s}\t{:s}\n'.format(last, preferred_name, uin))
+                roster[uin] = (last, preferred_name)
+        last, preferred_name = roster[uin]
+        event = '{:.4f},{:s},{:s},{:s},{:s}'.format(time.time(), id_key, preferred_name, last, uin)
+        with open(SWIPE_LOG, 'at') as swipe_log:
             swipe_log.write(event + '\n')
-            print('Howdy, {:s} {:s}!'.format(preferred_name, last))
-            show_img(uin, preferred_name, last)
-            if id_key in ADMIN_ID:
-                admin()
+        print('Howdy, {:s} {:s}!'.format(preferred_name, last))
+        show_img(uin, preferred_name, last)
+        if id_key in ADMIN_ID:
+            admin(roster)
 
 if __name__ == '__main__':
     # ignore SIGINT, SIGTSTP
