@@ -1,7 +1,5 @@
-<a href="https://scan.coverity.com/projects/philipritchey-swipr">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/19471/badge.svg"/>
-</a>
+<a href="https://scan.coverity.com/projects/philipritchey-swipr"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/19471/badge.svg"/></a>
+<a href="https://travis-ci.com/philipritchey/swipr"><img alt="Travis CI Build Status" src="https://travis-ci.com/philipritchey/swipr.svg?branch=master"/></a>
 
 # swipr
 id scanner for taking attendance
