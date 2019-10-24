@@ -25,7 +25,7 @@ with open('roster') as f:
             name[uin] = dict()
         name[uin]['first'] = first;
         name[uin]['last'] = last
-        
+
 attendance = dict()
 with open('swipe_log') as f:
     for line in f:
@@ -42,7 +42,7 @@ with open('swipe_log') as f:
         #if uin not in attendance[date]:
         #    print('marked {} present on {}'.format(uin, date))
         attendance[date].add(uin)
-       
+
 print('writing attendance data to "attendance.csv"...')
 with open('attendance.csv','wt') as f:
     f.write('last,first,uin,{},total\n'.format(','.join(date for date in sorted(attendance))))
