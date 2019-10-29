@@ -108,3 +108,5 @@ swipe_log
 uin_dict
 roster
 image/
+swipe_log_archive/
+attendance.csv
