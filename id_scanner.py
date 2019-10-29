@@ -13,6 +13,7 @@ import tkinter as tk
 import os
 from typing import Dict
 from PIL import ImageTk, Image
+from compute_attendance import main as compute_attendance_main
 
 PHILIP_RITCHEY  = '6016426594150381'
 DILMA_DA_SILVA  = '6016426594344166'
@@ -166,11 +167,31 @@ def ready():
 
     w.title('Ready')
     update_image(img_ready)
+    
+def init_attendance() -> Dict:
+    # create attendance.csv
+    compute_attendance_main()
+    
+    attendance = dict()
+    max_total = 0
+    with open('attendance.csv') as f:
+        # eat the header
+        f.readline()
+        for line in f:
+            values = line.split(',')
+            uin = values[2]
+            total = int(values[-1])
+            attendance[uin] = total
+    return attendance
 
 def main() -> None:
     """
     main loop for ID scanning
     """
+
+    # read in previous attendance
+    attendance = init_attendance()
+    max_attendance = max(attendance[uin] for uin in attendance)
 
     # read in UIN dictionary
     uin_dict = init_uin_dict()
@@ -232,7 +253,7 @@ def main() -> None:
         event = '{:.4f},{:s},{:s},{:s},{:s}'.format(time.time(), id_key, preferred_name, last, uin)
         with open(SWIPE_LOG, 'at') as swipe_log:
             swipe_log.write(event + '\n')
-        print('Howdy, {:s} {:s}!'.format(preferred_name, last))
+        print('Howdy, {:s} {:s}! You have {:d} days of swipes ({:.0f}%)'.format(preferred_name, last, attendance[uin]+1, (attendance[uin]+1)/(max_attendance+1)*100))
         show_img(uin, preferred_name, last)
         if id_key in ADMIN_ID:
             admin(roster)
