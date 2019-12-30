@@ -28,23 +28,26 @@ def load_roster(filename):
       name[uin]['last'] = last
   return name
 
+def split_on_comma_or_whitespace(line):
+  if ',' in line:
+    values = line.strip().split(',')
+  else:
+    values = line.strip().split()
+  return values
+
 def load_swipe_log(filename):
   attendance = dict()
-  with open(filename) as f:
-    for line in f:
-      if ',' in line:
-        values = line.strip().split(',')
-      else:
-        values = line.strip().split()
-      time = float(values[0])
-      uin = values[-1].strip()
-      date = str(datetime.fromtimestamp(time)).split()[0]
-      if date not in attendance:
-        print('processing attendance on {}'.format(date))
-        attendance[date] = set()
-      #if uin not in attendance[date]:
-      #    print('marked {} present on {}'.format(uin, date))
-      attendance[date].add(uin)
+  for line in open(filename):
+    values = split_on_comma_or_whitespace(line)
+    time = float(values[0])
+    uin = values[-1].strip()
+    date = str(datetime.fromtimestamp(time)).split()[0]
+    if date not in attendance:
+      print('processing attendance on {}'.format(date))
+      attendance[date] = set()
+    #if uin not in attendance[date]:
+    #    print('marked {} present on {}'.format(uin, date))
+    attendance[date].add(uin)
   return attendance
 
 def compute_attendance(name, attendance, filename='attendance.csv'):
