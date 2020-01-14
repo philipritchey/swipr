@@ -249,6 +249,8 @@ def main() -> None:
                 with open('roster', 'at') as f:
                     f.write('{:s}\t{:s}\t{:s}\n'.format(last, preferred_name, uin))
                 roster[uin] = (last, preferred_name)
+                # not in roster, so also not in attendance, so need to add
+                attendance[uin] = 0
         last, preferred_name = roster[uin]
         event = '{:.4f},{:s},{:s},{:s},{:s}'.format(time.time(), id_key, preferred_name, last, uin)
         with open(SWIPE_LOG, 'at') as swipe_log:
