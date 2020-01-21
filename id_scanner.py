@@ -36,7 +36,7 @@ UIN_DICT = 'uin_dict'
 ROSTER = 'roster'
 
 UIN_PATTERN = r'^\d{3}00\d{4}$'
-TAMU_ID_PATTERN = r'%(\d+)\?;((\d+)\?\+(\d+)\?)?'
+TAMU_ID_PATTERN = r'[%;+](\d{16})\?'
 
 # TODO: eliminate globals.  make a class?
 w = tk.Tk()
