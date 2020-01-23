@@ -63,6 +63,7 @@ def admin(roster) -> None:
         action = input('admin> ').lower()
         if action in ['exit', 'quit']:
             print('(admin) exiting...')
+            w.destroy()
             exit(1)
         elif action in ['test']:
             print('(admin) entering test mode')
@@ -260,6 +261,9 @@ def main() -> None:
         if id_key in ADMIN_ID:
             admin(roster)
 
+def disable_event():
+    pass
+
 if __name__ == '__main__':
     # ignore SIGINT, SIGTSTP
     signal.signal(signal.SIGINT, signal_handler)
@@ -268,5 +272,9 @@ if __name__ == '__main__':
     # setup tkinter window
     panel = tk.Label(w)
     panel.pack(side = tk.TOP, fill = tk.BOTH, expand = tk.YES)
+    
+    # disable tkinter toolbar
+    w.overrideredirect(True)
+    w.protocol("WM_DELETE_WINDOW", disable_event)
 
     main()
