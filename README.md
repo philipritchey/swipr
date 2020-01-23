@@ -12,7 +12,7 @@ run `git pull` to update.
 1. scan a student ID to log attendance.
    * new IDs prompt for UIN.
    * new UINs prompt for name.
-1. scan an admin ID (admin IDs are hardcoded right now) to enter admin mode.
+1. scan an admin ID (admin IDs are stored in a file named admins.py) to enter admin mode.
 1. end the program.
    * use admin `exit` or `quit`.
    * close terminal (not suggested, but probably OK)

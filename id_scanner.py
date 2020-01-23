@@ -14,20 +14,8 @@ import os
 from typing import Dict
 from PIL import ImageTk, Image
 from compute_attendance import main as compute_attendance_main
+from admins import ADMIN_ID
 
-PHILIP_RITCHEY  = '6016426594150381'
-DILMA_DA_SILVA  = '6016426594344166'
-MICHAEL_MOORE   = '6016426594018281'
-MICHAEL_NOWAK   = '6016426591940362'
-CARLOS_FERREIRA = '6016426594344174'
-
-ADMIN_ID = [
-    PHILIP_RITCHEY,
-    DILMA_DA_SILVA,
-    MICHAEL_MOORE,
-    MICHAEL_NOWAK,
-    CARLOS_FERREIRA,
-    ]
 TAMU_ID = '60'
 TX_DL = 'TX'
 
